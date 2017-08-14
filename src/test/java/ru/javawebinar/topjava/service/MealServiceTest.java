@@ -1,7 +1,13 @@
 package ru.javawebinar.topjava.service;
 
+import org.junit.AfterClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -14,6 +20,9 @@ import ru.javawebinar.topjava.util.exception.NotFoundException;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import static ru.javawebinar.topjava.MealTestData.*;
 import static ru.javawebinar.topjava.UserTestData.ADMIN_ID;
@@ -27,8 +36,36 @@ import static ru.javawebinar.topjava.UserTestData.USER_ID;
 @Sql(scripts = "classpath:db/populateDB.sql", config = @SqlConfig(encoding = "UTF-8"))
 public class MealServiceTest {
 
+    private static final Map<String, Long> timeForEveryTest = new HashMap<>();
+    private static final Logger log = LoggerFactory.getLogger(MealServiceTest.class);
+
     static {
         SLF4JBridgeHandler.install();
+    }
+
+    @Rule
+    public TestWatcher watcher = new TestWatcher() {
+
+        private long time;
+
+        @Override
+        protected void starting(Description description) {
+            time = new Date().getTime();
+        }
+
+        @Override
+        protected void finished(Description description) {
+            long finishTest = new Date().getTime() - time;
+            timeForEveryTest.put(description.getMethodName(), finishTest);
+           log.info("------------Test {} execute {} ms-----------------", description.getMethodName(), finishTest);
+        }
+    };
+
+    @AfterClass
+    public static void afterTest() {
+        for (Map.Entry<String, Long> pair : timeForEveryTest.entrySet()) {
+            System.out.println(pair.getKey() + "------------" + pair.getValue() + "ms");
+        }
     }
 
     @Autowired
