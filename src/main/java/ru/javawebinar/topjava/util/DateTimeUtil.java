@@ -9,6 +9,8 @@ import java.time.format.DateTimeFormatter;
 
 public class DateTimeUtil {
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_DATE;
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ISO_TIME;
 
     public static final LocalDate MIN_DATE = LocalDate.of(1, 1, 1);
     public static final LocalDate MAX_DATE = LocalDate.of(3000, 1, 1);
@@ -22,6 +24,14 @@ public class DateTimeUtil {
 
     public static String toString(LocalDateTime ldt) {
         return ldt == null ? "" : ldt.format(DATE_TIME_FORMATTER);
+    }
+
+    public static String toString(LocalDate ld){
+        return ld == null ? "" : ld.format(DATE_FORMATTER);
+    }
+
+    public static String toString(LocalTime lt){
+        return lt == null ? "" : lt.format(TIME_FORMATTER);
     }
 
     public static LocalDate parseLocalDate(String str) {
