@@ -28,6 +28,11 @@ function deleteRow(id) {
     });
 }
 
+function updateTable() {
+    $.get(ajaxUrl, function (data) {
+        datatableApi.clear().rows.add(data).draw();
+    });
+}
 
 function save() {
     var form = $("#detailsForm");
@@ -37,10 +42,28 @@ function save() {
         data: form.serialize(),
         success: function () {
             $("#editRow").modal("hide");
-            updateTable();
+            between();
             successNoty("Saved");
         }
     });
+}
+
+function between(){
+    var form = $("#between");
+    $.ajax({
+            type: "POST",
+            url: ajaxUrl + 'filter',
+            data: form.serialize(),
+            success: function(data){
+                datatableApi.clear().rows.add(data).draw();
+            }
+        }
+    )
+}
+
+function clearFilter(){
+    $("#between").find(":input").val("");
+    updateTable();
 }
 
 var failedNote;
