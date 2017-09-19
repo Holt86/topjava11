@@ -8,6 +8,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.to.MealWithExceed;
+import ru.javawebinar.topjava.util.ValidationUtil;
 
 import javax.validation.Valid;
 import java.time.LocalDate;
@@ -15,6 +16,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.StringJoiner;
+
+import static ru.javawebinar.topjava.util.ValidationUtil.*;
 
 @RestController
 @RequestMapping(value = "/ajax/profile/meals")
@@ -40,23 +43,15 @@ public class MealAjaxController extends AbstractMealController {
 
     @PostMapping()
     public ResponseEntity<String> createOrUpdate(@Valid Meal meal, BindingResult result) {
-        if (result.hasErrors()){
-            StringJoiner joiner = new StringJoiner("<br>");
-            result.getFieldErrors().forEach(fe -> {
-                String msg = fe.getDefaultMessage();
-                if (!msg.startsWith(fe.getField())){
-                    msg = fe.getField() + ' ' + msg;
-                }
-                joiner.add(msg);
-            });
-            return new ResponseEntity<String>(joiner.toString(), HttpStatus.UNPROCESSABLE_ENTITY);
-        }else {
-            if (meal.isNew()) {
-                super.create(meal);
-            }else {
-                super.update(meal, meal.getId());
-            }
+        if (result.hasErrors()) {
+            return getResponseErrors(result);
         }
+        if (meal.isNew()) {
+            super.create(meal);
+        } else {
+            super.update(meal, meal.getId());
+        }
+
         return new ResponseEntity<String>(HttpStatus.OK);
     }
 
