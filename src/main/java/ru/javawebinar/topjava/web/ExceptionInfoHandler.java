@@ -6,12 +6,17 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.BindException;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import ru.javawebinar.topjava.util.ValidationUtil;
 import ru.javawebinar.topjava.util.exception.ErrorInfo;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
+
 
 @ControllerAdvice(annotations = RestController.class)
 @Order(Ordered.HIGHEST_PRECEDENCE + 5)
@@ -40,6 +45,26 @@ public class ExceptionInfoHandler {
         return logAndGetErrorInfo(req, e, true);
     }
 
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    @ExceptionHandler(BindException.class)
+    @ResponseBody
+    public ErrorInfo bindValidationError(HttpServletRequest req, BindingResult result){
+        return logAndGetValidationErrorInfo(req, result);
+    }
+
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseBody
+    public ErrorInfo restValidationError(HttpServletRequest req, MethodArgumentNotValidException e){
+          return logAndGetValidationErrorInfo(req, e.getBindingResult());
+    }
+
+    private static ErrorInfo logAndGetValidationErrorInfo(HttpServletRequest req, BindingResult result){
+      String[] detail = result.getFieldErrors().stream()
+              .map(error -> error.getField() + " " + error.getDefaultMessage()).toArray(String[]::new);
+        return logAndGetErrorInfo(req, "ValidationException", detail);
+    }
+
     private static ErrorInfo logAndGetErrorInfo(HttpServletRequest req, Exception e, boolean logException) {
         Throwable rootCause = ValidationUtil.getRootCause(e);
         if (logException) {
@@ -49,4 +74,11 @@ public class ExceptionInfoHandler {
         }
         return new ErrorInfo(req.getRequestURL(), rootCause);
     }
+
+    public static ErrorInfo logAndGetErrorInfo(HttpServletRequest req, String cause, String... detail){
+        LOG.warn("{}: exception at request {} -- {}", cause, req.getRequestURL().toString(), Arrays.toString(detail) );
+        return new ErrorInfo(req.getRequestURL(), cause, Arrays.toString(detail));
+    }
+
+
 }
