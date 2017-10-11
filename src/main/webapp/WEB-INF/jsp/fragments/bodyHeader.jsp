@@ -17,6 +17,8 @@
                     <button class="btn btn-primary" type="submit">
                         <span class="glyphicon glyphicon-log-out" aria-hidden="true"></span>
                     </button>
+                    <a href="<%=request.getAttribute("javax.servlet.forward.request_uri")%>?lang=en">en</a>
+                    <a href="<%=request.getAttribute("javax.servlet.forward.request_uri")%>?lang=ru">ru</a>
                 </sec:authorize>
             </form:form>
         </div>
